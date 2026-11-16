@@ -1,0 +1,661 @@
+[
+  {
+    "scene_id": 1,
+    "scene_type": "hook",
+    "narration": "Why do airplanes take giant curved detours instead of flying straight across the map?",
+    "visual_directive": "Display a centered RoundedRectangle representing a flat world map with two Dot markers on opposite sides. Draw a straight DashedLine between the Dots, then trigger a bright CurvedArrow arcing high over the top edge precisely on the spoken words 'curved detours'.",
+    "header_text": "THE FLIGHT PARADOX",
+    "pacing_notes": "6.0s total. Snap the CurvedArrow in rapidly with a slight overshoot to grab attention immediately.",
+    "audio_file_path": "runs/20261116_110336_why_planes_don_t_fly_in_straight_lines/02_audio/scene_01.wav",
+    "exact_duration_sec": 6.56,
+    "word_timestamps": [
+      {
+        "word": "Why",
+        "start": 0,
+        "end": 0.277
+      },
+      {
+        "word": "do",
+        "start": 0.277,
+        "end": 0.462
+      },
+      {
+        "word": "airplanes",
+        "start": 0.462,
+        "end": 1.294
+      },
+      {
+        "word": "take",
+        "start": 1.294,
+        "end": 1.663
+      },
+      {
+        "word": "giant",
+        "start": 1.663,
+        "end": 2.125
+      },
+      {
+        "word": "curved",
+        "start": 2.125,
+        "end": 2.679
+      },
+      {
+        "word": "detours",
+        "start": 2.679,
+        "end": 3.326
+      },
+      {
+        "word": "instead",
+        "start": 3.326,
+        "end": 3.973
+      },
+      {
+        "word": "of",
+        "start": 3.973,
+        "end": 4.158
+      },
+      {
+        "word": "flying",
+        "start": 4.158,
+        "end": 4.712
+      },
+      {
+        "word": "straight",
+        "start": 4.712,
+        "end": 5.451
+      },
+      {
+        "word": "across",
+        "start": 5.451,
+        "end": 6.006
+      },
+      {
+        "word": "the",
+        "start": 6.006,
+        "end": 6.283
+      },
+      {
+        "word": "map?",
+        "start": 6.283,
+        "end": 6.56
+      }
+    ]
+  },
+  {
+    "scene_id": 2,
+    "scene_type": "misconception",
+    "narration": "That straight dashed line looks shortest, right? On a flat screen, it actually wastes thousands of miles.",
+    "visual_directive": "Zoom into the RoundedRectangle map and pulse the straight DashedLine in secondary_accent red. On the spoken word 'wastes', animate a ValueTracker counter ticking rapidly upward next to the straight path while a triangular Polygon plane stalls halfway along it.",
+    "header_text": "THE FLAT MAP TRAP",
+    "pacing_notes": "7.0s total. Brief 0.4s pause after 'right?' before triggering the counter animation.",
+    "audio_file_path": "runs/20261116_110336_why_planes_don_t_fly_in_straight_lines/02_audio/scene_02.wav",
+    "exact_duration_sec": 8,
+    "word_timestamps": [
+      {
+        "word": "That",
+        "start": 0,
+        "end": 0.376
+      },
+      {
+        "word": "straight",
+        "start": 0.376,
+        "end": 1.129
+      },
+      {
+        "word": "dashed",
+        "start": 1.129,
+        "end": 1.694
+      },
+      {
+        "word": "line",
+        "start": 1.694,
+        "end": 2.071
+      },
+      {
+        "word": "looks",
+        "start": 2.071,
+        "end": 2.541
+      },
+      {
+        "word": "shortest,",
+        "start": 2.541,
+        "end": 3.294
+      },
+      {
+        "word": "right?",
+        "start": 3.294,
+        "end": 3.765
+      },
+      {
+        "word": "On",
+        "start": 3.765,
+        "end": 3.953
+      },
+      {
+        "word": "a",
+        "start": 3.953,
+        "end": 4.047
+      },
+      {
+        "word": "flat",
+        "start": 4.047,
+        "end": 4.424
+      },
+      {
+        "word": "screen,",
+        "start": 4.424,
+        "end": 4.988
+      },
+      {
+        "word": "it",
+        "start": 4.988,
+        "end": 5.176
+      },
+      {
+        "word": "actually",
+        "start": 5.176,
+        "end": 5.929
+      },
+      {
+        "word": "wastes",
+        "start": 5.929,
+        "end": 6.494
+      },
+      {
+        "word": "thousands",
+        "start": 6.494,
+        "end": 7.341
+      },
+      {
+        "word": "of",
+        "start": 7.341,
+        "end": 7.529
+      },
+      {
+        "word": "miles.",
+        "start": 7.529,
+        "end": 8
+      }
+    ]
+  },
+  {
+    "scene_id": 3,
+    "scene_type": "mechanism",
+    "narration": "The culprit is flat maps. Stretching a round globe onto a rectangle wildly inflates the northern regions.",
+    "visual_directive": "Show a Circle divided by four crossing Line segments representing latitude and longitude. On the spoken word 'Stretching', execute a Transform morphing the Circle into a wide RoundedRectangle grid, visibly elongating the upper grid cells vertically when 'inflates' is spoken.",
+    "header_text": "MAP DISTORTION",
+    "pacing_notes": "7.0s total. Smooth 1.8s Transform synchronized with the stretching explanation.",
+    "audio_file_path": "runs/20261116_110336_why_planes_don_t_fly_in_straight_lines/02_audio/scene_03.wav",
+    "exact_duration_sec": 8.12,
+    "word_timestamps": [
+      {
+        "word": "The",
+        "start": 0,
+        "end": 0.28
+      },
+      {
+        "word": "culprit",
+        "start": 0.28,
+        "end": 0.933
+      },
+      {
+        "word": "is",
+        "start": 0.933,
+        "end": 1.12
+      },
+      {
+        "word": "flat",
+        "start": 1.12,
+        "end": 1.493
+      },
+      {
+        "word": "maps.",
+        "start": 1.493,
+        "end": 1.867
+      },
+      {
+        "word": "Stretching",
+        "start": 1.867,
+        "end": 2.8
+      },
+      {
+        "word": "a",
+        "start": 2.8,
+        "end": 2.893
+      },
+      {
+        "word": "round",
+        "start": 2.893,
+        "end": 3.36
+      },
+      {
+        "word": "globe",
+        "start": 3.36,
+        "end": 3.827
+      },
+      {
+        "word": "onto",
+        "start": 3.827,
+        "end": 4.2
+      },
+      {
+        "word": "a",
+        "start": 4.2,
+        "end": 4.293
+      },
+      {
+        "word": "rectangle",
+        "start": 4.293,
+        "end": 5.133
+      },
+      {
+        "word": "wildly",
+        "start": 5.133,
+        "end": 5.693
+      },
+      {
+        "word": "inflates",
+        "start": 5.693,
+        "end": 6.44
+      },
+      {
+        "word": "the",
+        "start": 6.44,
+        "end": 6.72
+      },
+      {
+        "word": "northern",
+        "start": 6.72,
+        "end": 7.467
+      },
+      {
+        "word": "regions.",
+        "start": 7.467,
+        "end": 8.12
+      }
+    ]
+  },
+  {
+    "scene_id": 4,
+    "scene_type": "core_concept",
+    "narration": "Earth is a sphere, so the true shortest path is always an arc called a great circle.",
+    "visual_directive": "Replace the grid with a clean Circle centered around an origin Dot. On the spoken words 'shortest path', draw a slicing Line straight through the center Dot, and highlight the outer edge between two perimeter Dots as a glowing primary_accent Arc on 'great circle'.",
+    "header_text": "GREAT CIRCLE GEOMETRY",
+    "pacing_notes": "7.0s total. Clean, minimalist geometry; let the glowing Arc linger for 1.0s.",
+    "audio_file_path": "runs/20261116_110336_why_planes_don_t_fly_in_straight_lines/02_audio/scene_04.wav",
+    "exact_duration_sec": 7.44,
+    "word_timestamps": [
+      {
+        "word": "Earth",
+        "start": 0,
+        "end": 0.564
+      },
+      {
+        "word": "is",
+        "start": 0.564,
+        "end": 0.789
+      },
+      {
+        "word": "a",
+        "start": 0.789,
+        "end": 0.902
+      },
+      {
+        "word": "sphere,",
+        "start": 0.902,
+        "end": 1.578
+      },
+      {
+        "word": "so",
+        "start": 1.578,
+        "end": 1.804
+      },
+      {
+        "word": "the",
+        "start": 1.804,
+        "end": 2.142
+      },
+      {
+        "word": "true",
+        "start": 2.142,
+        "end": 2.593
+      },
+      {
+        "word": "shortest",
+        "start": 2.593,
+        "end": 3.495
+      },
+      {
+        "word": "path",
+        "start": 3.495,
+        "end": 3.945
+      },
+      {
+        "word": "is",
+        "start": 3.945,
+        "end": 4.171
+      },
+      {
+        "word": "always",
+        "start": 4.171,
+        "end": 4.847
+      },
+      {
+        "word": "an",
+        "start": 4.847,
+        "end": 5.073
+      },
+      {
+        "word": "arc",
+        "start": 5.073,
+        "end": 5.411
+      },
+      {
+        "word": "called",
+        "start": 5.411,
+        "end": 6.087
+      },
+      {
+        "word": "a",
+        "start": 6.087,
+        "end": 6.2
+      },
+      {
+        "word": "great",
+        "start": 6.2,
+        "end": 6.764
+      },
+      {
+        "word": "circle.",
+        "start": 6.764,
+        "end": 7.44
+      }
+    ]
+  },
+  {
+    "scene_id": 5,
+    "scene_type": "comparison",
+    "narration": "Stretch a string tight across a globe, and it naturally curves north, matching the plane's exact route.",
+    "visual_directive": "Split the vertical frame into two stacked comparison boxes using RoundedRectangle outlines. Top box shows a Circle with a taut Line across its upper curve; bottom box mirrors the CurvedArrow arcing upward, animating a Polygon plane along it when 'curves north' is spoken.",
+    "header_text": "GLOBE VS. PAPER",
+    "pacing_notes": "7.0s total. Keep top and bottom animations tightly synchronized so the viewer connects the two perspectives.",
+    "audio_file_path": "runs/20261116_110336_why_planes_don_t_fly_in_straight_lines/02_audio/scene_05.wav",
+    "exact_duration_sec": 8.24,
+    "word_timestamps": [
+      {
+        "word": "Stretch",
+        "start": 0,
+        "end": 0.695
+      },
+      {
+        "word": "a",
+        "start": 0.695,
+        "end": 0.794
+      },
+      {
+        "word": "string",
+        "start": 0.794,
+        "end": 1.39
+      },
+      {
+        "word": "tight",
+        "start": 1.39,
+        "end": 1.886
+      },
+      {
+        "word": "across",
+        "start": 1.886,
+        "end": 2.482
+      },
+      {
+        "word": "a",
+        "start": 2.482,
+        "end": 2.581
+      },
+      {
+        "word": "globe,",
+        "start": 2.581,
+        "end": 3.078
+      },
+      {
+        "word": "and",
+        "start": 3.078,
+        "end": 3.375
+      },
+      {
+        "word": "it",
+        "start": 3.375,
+        "end": 3.574
+      },
+      {
+        "word": "naturally",
+        "start": 3.574,
+        "end": 4.467
+      },
+      {
+        "word": "curves",
+        "start": 4.467,
+        "end": 5.063
+      },
+      {
+        "word": "north,",
+        "start": 5.063,
+        "end": 5.56
+      },
+      {
+        "word": "matching",
+        "start": 5.56,
+        "end": 6.354
+      },
+      {
+        "word": "the",
+        "start": 6.354,
+        "end": 6.652
+      },
+      {
+        "word": "plane's",
+        "start": 6.652,
+        "end": 7.247
+      },
+      {
+        "word": "exact",
+        "start": 7.247,
+        "end": 7.744
+      },
+      {
+        "word": "route.",
+        "start": 7.744,
+        "end": 8.24
+      }
+    ]
+  },
+  {
+    "scene_id": 6,
+    "scene_type": "data_payoff",
+    "narration": "Flying that curved arc from New York to Tokyo saves nearly five hundred miles and hours of fuel.",
+    "visual_directive": "Render a clean two-bar BarChart comparing 'Flat Line' in secondary_accent against 'Great Circle' in primary_accent. Trigger a ValueTracker label dropping by 500 miles alongside a shrinking bar indicator precisely on the spoken word 'saves'.",
+    "header_text": "500 MILES SAVED",
+    "pacing_notes": "7.0s total. Punchy bar growth animation followed by crisp numeric readout.",
+    "audio_file_path": "runs/20261116_110336_why_planes_don_t_fly_in_straight_lines/02_audio/scene_06.wav",
+    "exact_duration_sec": 8.12,
+    "word_timestamps": [
+      {
+        "word": "Flying",
+        "start": 0.44,
+        "end": 0.98
+      },
+      {
+        "word": "that",
+        "start": 0.98,
+        "end": 1.24
+      },
+      {
+        "word": "curved",
+        "start": 1.24,
+        "end": 1.8
+      },
+      {
+        "word": "arc",
+        "start": 1.8,
+        "end": 2.34
+      },
+      {
+        "word": "from",
+        "start": 2.34,
+        "end": 2.58
+      },
+      {
+        "word": "New",
+        "start": 2.58,
+        "end": 2.78
+      },
+      {
+        "word": "York",
+        "start": 2.78,
+        "end": 3.12
+      },
+      {
+        "word": "to",
+        "start": 3.12,
+        "end": 3.24
+      },
+      {
+        "word": "Tokyo",
+        "start": 3.24,
+        "end": 3.92
+      },
+      {
+        "word": "saves",
+        "start": 4.14,
+        "end": 4.54
+      },
+      {
+        "word": "nearly",
+        "start": 4.54,
+        "end": 4.94
+      },
+      {
+        "word": "five",
+        "start": 4.94,
+        "end": 5.26
+      },
+      {
+        "word": "hundred",
+        "start": 5.26,
+        "end": 5.64
+      },
+      {
+        "word": "miles",
+        "start": 5.64,
+        "end": 6.18
+      },
+      {
+        "word": "and",
+        "start": 6.44,
+        "end": 6.72
+      },
+      {
+        "word": "hours",
+        "start": 6.72,
+        "end": 7.18
+      },
+      {
+        "word": "of",
+        "start": 7.18,
+        "end": 7.34
+      },
+      {
+        "word": "fuel.",
+        "start": 7.34,
+        "end": 8.12
+      }
+    ]
+  },
+  {
+    "scene_id": 7,
+    "scene_type": "takeaway",
+    "narration": "Add fast-moving jet stream winds, and curving becomes the fastest, cheapest highway in the sky.",
+    "visual_directive": "Center a Circle representing Earth surrounded by three parallel sweeping CurvedArrows moving left to right. On the spoken words 'jet stream', accelerate a triangular Polygon plane riding inside the CurvedArrows until it exits off the right edge of the frame.",
+    "header_text": "HIGHWAY IN THE SKY",
+    "pacing_notes": "7.0s total. High-energy exit motion on the final beat to loop cleanly back to Scene 1.",
+    "audio_file_path": "runs/20261116_110336_why_planes_don_t_fly_in_straight_lines/02_audio/scene_07.wav",
+    "exact_duration_sec": 6.96,
+    "word_timestamps": [
+      {
+        "word": "Add",
+        "start": 0,
+        "end": 0.271
+      },
+      {
+        "word": "fast-moving",
+        "start": 0.271,
+        "end": 1.175
+      },
+      {
+        "word": "jet",
+        "start": 1.175,
+        "end": 1.446
+      },
+      {
+        "word": "stream",
+        "start": 1.446,
+        "end": 1.989
+      },
+      {
+        "word": "winds,",
+        "start": 1.989,
+        "end": 2.441
+      },
+      {
+        "word": "and",
+        "start": 2.441,
+        "end": 2.712
+      },
+      {
+        "word": "curving",
+        "start": 2.712,
+        "end": 3.344
+      },
+      {
+        "word": "becomes",
+        "start": 3.344,
+        "end": 3.977
+      },
+      {
+        "word": "the",
+        "start": 3.977,
+        "end": 4.248
+      },
+      {
+        "word": "fastest,",
+        "start": 4.248,
+        "end": 4.881
+      },
+      {
+        "word": "cheapest",
+        "start": 4.881,
+        "end": 5.604
+      },
+      {
+        "word": "highway",
+        "start": 5.604,
+        "end": 6.237
+      },
+      {
+        "word": "in",
+        "start": 6.237,
+        "end": 6.418
+      },
+      {
+        "word": "the",
+        "start": 6.418,
+        "end": 6.689
+      },
+      {
+        "word": "sky.",
+        "start": 6.689,
+        "end": 6.96
+      }
+    ]
+  }
+]

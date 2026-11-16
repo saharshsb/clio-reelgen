@@ -1,0 +1,78 @@
+{
+  "run_id": "20261116_110336_why_planes_don_t_fly_in_straight_lines",
+  "topic": "Why Planes Don't Fly in Straight Lines",
+  "voice": "Kore",
+  "render_profile": "master",
+  "include_bg_music": false,
+  "status": "IN_PROGRESS",
+  "current_stage": "stage_3",
+  "stages": {
+    "stage_0": "completed",
+    "stage_1": "completed",
+    "stage_2": "completed",
+    "stage_3": "running",
+    "stage_4": "pending"
+  },
+  "created_at": "2026-11-16T11:03:36.596Z",
+  "updated_at": "2026-11-16T11:20:08.570Z",
+  "scene_statuses": [
+    {
+      "scene_id": 1,
+      "header_text": "THE FLIGHT PARADOX",
+      "status": "generating_code",
+      "code_attempts": 0,
+      "vision_attempts": 0,
+      "exact_duration_sec": 6.56
+    },
+    {
+      "scene_id": 2,
+      "header_text": "THE FLAT MAP TRAP",
+      "status": "generating_code",
+      "code_attempts": 0,
+      "vision_attempts": 0,
+      "exact_duration_sec": 8
+    },
+    {
+      "scene_id": 3,
+      "header_text": "MAP DISTORTION",
+      "status": "pending",
+      "code_attempts": 0,
+      "vision_attempts": 0,
+      "exact_duration_sec": 8.12
+    },
+    {
+      "scene_id": 4,
+      "header_text": "GREAT CIRCLE GEOMETRY",
+      "status": "pending",
+      "code_attempts": 0,
+      "vision_attempts": 0,
+      "exact_duration_sec": 7.44
+    },
+    {
+      "scene_id": 5,
+      "header_text": "GLOBE VS. PAPER",
+      "status": "pending",
+      "code_attempts": 0,
+      "vision_attempts": 0,
+      "exact_duration_sec": 8.24
+    },
+    {
+      "scene_id": 6,
+      "header_text": "500 MILES SAVED",
+      "status": "pending",
+      "code_attempts": 0,
+      "vision_attempts": 0,
+      "exact_duration_sec": 8.12
+    },
+    {
+      "scene_id": 7,
+      "header_text": "HIGHWAY IN THE SKY",
+      "status": "pending",
+      "code_attempts": 0,
+      "vision_attempts": 0,
+      "exact_duration_sec": 6.96
+    }
+  ],
+  "video_title": "Why Planes Don't Fly in Straight Lines",
+  "total_duration_sec": 53.44
+}

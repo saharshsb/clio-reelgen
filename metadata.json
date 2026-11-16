@@ -1,0 +1,6 @@
+{
+  "name": "Kinema Pipeline Studio",
+  "description": "Automated audio-first short-form infotainment video generation pipeline powered by Gemini and Manim.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

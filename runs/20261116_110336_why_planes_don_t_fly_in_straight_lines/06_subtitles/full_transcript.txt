@@ -1,0 +1,13 @@
+Why do airplanes take giant curved detours instead of flying straight across the map?
+
+That straight dashed line looks shortest, right? On a flat screen, it actually wastes thousands of miles.
+
+The culprit is flat maps. Stretching a round globe onto a rectangle wildly inflates the northern regions.
+
+Earth is a sphere, so the true shortest path is always an arc called a great circle.
+
+Stretch a string tight across a globe, and it naturally curves north, matching the plane's exact route.
+
+Flying that curved arc from New York to Tokyo saves nearly five hundred miles and hours of fuel.
+
+Add fast-moving jet stream winds, and curving becomes the fastest, cheapest highway in the sky.
