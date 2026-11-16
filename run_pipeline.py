@@ -13,6 +13,7 @@ import datetime
 import json
 import os
 import re
+import shutil
 import struct
 import subprocess
 import sys
@@ -22,11 +23,28 @@ import urllib.request
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parent
-PY_RUNNER = ROOT_DIR / "py_runtime" / "runner.py"
-TIMELINE_RENDERER = ROOT_DIR / "py_runtime" / "render_timeline.mjs"
 
 MAX_CODE_RETRIES = 3
 MAX_VISION_RETRIES = 1
+
+
+def ensure_ffmpeg_in_path():
+    if shutil.which("ffmpeg") is None:
+        winget_base = Path(os.environ.get("LOCALAPPDATA", "")) / "Microsoft" / "WinGet" / "Packages"
+        if winget_base.exists():
+            for p in winget_base.rglob("ffmpeg.exe"):
+                os.environ["PATH"] = str(p.parent) + os.pathsep + os.environ["PATH"]
+                break
+
+
+ensure_ffmpeg_in_path()
+
+
+def find_rendered_manim_mp4(cache_dir: Path, filename: str) -> Path | None:
+    for p in cache_dir.rglob(filename):
+        if p.is_file() and "partial_movie_files" not in p.parts:
+            return p
+    return None
 
 GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 MODEL_MIN_GAP_SEC = {
@@ -295,20 +313,27 @@ def generate_audio_and_alignment(storyboard: dict, out_audio_dir: Path, voice: s
     return aligned
 
 
-MANIM_CODER_PROMPT = """You are a Senior Python Developer and Manim Community (v0.18.1) animation engineer.
-Write a complete, executable Python script for a single vertical (9:16) scene:
+MANIM_CODER_PROMPT = """You are a World-Class Motion Graphics Animator and Senior Manim Community (manim v0.19+) engineer producing broadcast-grade vertical (9:16) short-form infotainment (similar to Vox, Kurzgesagt, and 3Blue1Brown).
+
+Write a complete, high-aesthetic, executable Python script for a single vertical (9:16) scene:
 from manim import *
 import numpy as np
+
 config.pixel_width = 1080
 config.pixel_height = 1920
 config.frame_width = 8.0
 config.frame_height = 14.22
 
 Rules:
-- Header text at y=5.2 (max width 6.2).
-- Primary visuals strictly inside x in [-3.4, 3.4], y in [-1.4, 4.5]. Bottom quarter (y < -1.5) MUST stay empty.
-- Track `elapsed = 0.0` and end with `self.wait(max(0.05, EXACT_DURATION - elapsed))` so total duration == exact_duration_sec.
-- Use Text(..., font="Noto Sans"), Manim v0.18+ APIs (Create, Axes with x_length/y_length, hex colors), class GeneratedScene(Scene).
+- Spatial Bounds: Header text at y=5.2 (max width 6.2). Primary visuals strictly inside x in [-3.2, 3.2], y in [-1.4, 4.6].
+- Forbidden Zone: Bottom quarter (y < -1.5) MUST stay completely empty for burned-in subtitles.
+- Smooth Animation Principles:
+  * NO TOPOLOGICAL MORPHS: Never use Transform() or ReplacementTransform() between different shapes/text. Use FadeOut(old, shift=DOWN*0.25, scale=0.85) + FadeIn(new, shift=UP*0.25, scale=1.05) or GrowFromCenter(new).
+  * MANDATORY STAGGERING: Never spawn all objects at once. Reveal elements using AnimationGroup(*..., lag_ratio=0.15).
+  * NATURAL EASING: Use rate_func=rush_from for arrivals, rush_into for exits, smooth for movement, and Indicate() for emphasis.
+  * LIVING SCREEN: Avoid long frozen pauses (self.wait(2+)). Add subtle secondary motion (ambient breathing, tracker updates).
+- Timing Contract: Track `elapsed = 0.0` after every self.play() and self.wait(), ending with `self.wait(max(0.05, exact_duration_sec - elapsed))` so total duration == exact_duration_sec.
+- Typography & Safety: Text("...", font="Arial") or Text("..."). Do NOT use LaTeX/Tex() unless equations are required. Class GeneratedScene(Scene).
 Output ONLY a single ```python ... ``` block."""
 
 
@@ -323,7 +348,7 @@ def call_manim_coder_llm(scene: dict, palette: dict, api_key: str) -> str:
 
 def call_debugger_llm(scene: dict, broken_code: str, stderr_tb: str, api_key: str) -> str:
     prompt = (
-        f"Fix this broken Manim v0.18+ Python script. Preserve 9:16 safe zones (x in [-3.4, 3.4], y in [-1.4, 5.5]) "
+        f"Fix this broken Manim Community v0.19+ Python script. Preserve 9:16 safe zones (x in [-3.2, 3.2], y in [-1.4, 4.6]) "
         f"and exact_duration_sec={scene['exact_duration_sec']}.\n\nCode:\n```python\n{broken_code}\n```\n\nStderr:\n```\n{stderr_tb}\n```\n"
         "Output ONLY the fixed ```python ... ``` block."
     )
@@ -367,7 +392,7 @@ def call_vision_qa_llm(frames: list[Path], scene: dict, api_key: str) -> dict:
 def call_layout_fixer_llm(scene: dict, code: str, critique: str, api_key: str) -> str:
     prompt = (
         f"Fix the layout issues described below while keeping exact_duration_sec={scene['exact_duration_sec']} "
-        f"and safe zones (x in [-3.4, 3.4], y in [-1.4, 4.5], header y=5.2).\n\nCritique: {critique}\n\n"
+        f"and safe zones (x in [-3.2, 3.2], y in [-1.4, 4.6], header y=5.2).\n\nCritique: {critique}\n\n"
         f"Current code:\n```python\n{code}\n```\nOutput ONLY ```python ... ```."
     )
     payload = {
@@ -395,11 +420,17 @@ def render_and_validate_scene(scene: dict, palette: dict, dirs: dict[str, Path],
     max_vision_loops = MAX_VISION_RETRIES if enable_vision_qa else 0
 
     for v_att in range(max_vision_loops + 1):
-        preview_tl = cache_dir / f"preview_v{v_att}.json"
+        preview_out_name = f"preview_v{v_att}.mp4"
         for c_att in range(MAX_CODE_RETRIES):
             (dirs["code"] / f"scene_{sid:02d}_v{v_att}_c{c_att}.py").write_text(code, encoding="utf-8")
             proc = subprocess.run(
-                ["python3", str(PY_RUNNER), str(script_path), "GeneratedScene", "--fps", "15", "--out", str(preview_tl)],
+                [
+                    sys.executable, "-m", "manim",
+                    "-ql", "--format=mp4",
+                    "--media_dir", str(cache_dir),
+                    "-o", preview_out_name,
+                    str(script_path), "GeneratedScene",
+                ],
                 capture_output=True, text=True,
             )
             if proc.returncode == 0:
@@ -410,23 +441,35 @@ def render_and_validate_scene(scene: dict, palette: dict, dirs: dict[str, Path],
             code = call_debugger_llm(scene, code, proc.stderr[-2500:], api_key)
             script_path.write_text(code, encoding="utf-8")
 
-        preview_mp4 = cache_dir / f"preview_v{v_att}.mp4"
+        preview_mp4 = find_rendered_manim_mp4(cache_dir, preview_out_name)
+        if not preview_mp4 or not preview_mp4.exists():
+            raise RuntimeError(f"Scene {sid} preview compiled with code 0 but {preview_out_name} not found in {cache_dir}")
+
         qa_prefix = f"scene_{sid:02d}_attempt_{v_att}"
-        subprocess.run(
-            [
-                "node", str(TIMELINE_RENDERER),
-                "--timeline", str(preview_tl),
-                "--out", str(preview_mp4),
-                "--width", "540", "--height", "960",
-                "--qa-dir", str(dirs["qa_frames"]), "--qa-prefix", qa_prefix,
-            ],
-            check=True,
-        )
+        dur = scene.get("exact_duration_sec", 4.0)
+        t25 = max(0.05, round(dur * 0.25, 2))
+        t60 = max(0.05, round(dur * 0.60, 2))
+        t95 = max(0.05, round(dur * 0.95, 2))
         frames = [
             dirs["qa_frames"] / f"{qa_prefix}_frame_25.png",
             dirs["qa_frames"] / f"{qa_prefix}_frame_60.png",
             dirs["qa_frames"] / f"{qa_prefix}_frame_95.png",
         ]
+        for f_path, t in zip(frames, [t25, t60, t95]):
+            subprocess.run(
+                [
+                    "ffmpeg", "-y",
+                    "-ss", str(t),
+                    "-i", str(preview_mp4),
+                    "-vframes", "1",
+                    "-q:v", "2",
+                    str(f_path),
+                ],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=True,
+            )
+
         if not enable_vision_qa:
             report = json.loads(qa_report_path.read_text(encoding="utf-8")) if qa_report_path.exists() else []
             report.append({
@@ -458,18 +501,27 @@ def render_and_validate_scene(scene: dict, palette: dict, dirs: dict[str, Path],
         code = call_layout_fixer_llm(scene, code, qa.get("code_fix_instructions", ""), api_key)
         script_path.write_text(code, encoding="utf-8")
 
-    fps = 60 if profile == "master" else 30
-    w, h = (1080, 1920) if profile == "master" else (540, 960)
-    final_tl = cache_dir / "final_timeline.json"
-    subprocess.run(
-        ["python3", str(PY_RUNNER), str(script_path), "GeneratedScene", "--fps", str(fps), "--out", str(final_tl)],
-        check=True,
+    qual_flag = "-qh" if profile == "master" else "-qm"
+    out_name = f"raw_scene_{sid:02d}.mp4"
+    proc_final = subprocess.run(
+        [
+            sys.executable, "-m", "manim",
+            qual_flag, "--format=mp4",
+            "--media_dir", str(cache_dir),
+            "-o", out_name,
+            str(script_path), "GeneratedScene",
+        ],
+        capture_output=True, text=True,
     )
-    raw_mp4 = dirs["renders"] / f"raw_scene_{sid:02d}.mp4"
-    subprocess.run(
-        ["node", str(TIMELINE_RENDERER), "--timeline", str(final_tl), "--out", str(raw_mp4), "--width", str(w), "--height", str(h)],
-        check=True,
-    )
+    if proc_final.returncode != 0:
+        raise RuntimeError(f"Scene {sid} final Manim render failed:\n{proc_final.stderr}")
+
+    final_mp4 = find_rendered_manim_mp4(cache_dir, out_name)
+    raw_mp4 = dirs["renders"] / out_name
+    if final_mp4 and final_mp4.exists():
+        shutil.copy2(final_mp4, raw_mp4)
+    else:
+        raise FileNotFoundError(f"Final rendered file {out_name} not found in {cache_dir}")
     return raw_mp4
 
 

@@ -30,8 +30,75 @@ import type {
 } from "../types.ts";
 
 export const RUNS_DIR = path.resolve(process.cwd(), "runs");
-const PY_RUNNER = path.resolve(process.cwd(), "py_runtime/runner.py");
-const TIMELINE_RENDERER = path.resolve(process.cwd(), "py_runtime/render_timeline.mjs");
+const PYTHON_CMD = process.platform === "win32" ? "python" : "python3";
+
+function ensureFfmpegInPath() {
+  const p = process.env.PATH || "";
+  const wingetBase = path.join(
+    process.env.LOCALAPPDATA || "",
+    "Microsoft",
+    "WinGet",
+    "Packages"
+  );
+  if (fs.existsSync(wingetBase)) {
+    const findFfmpeg = (dir: string): string | null => {
+      try {
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        for (const e of entries) {
+          const full = path.join(dir, e.name);
+          if (
+            e.isFile() &&
+            (e.name.toLowerCase() === "ffmpeg.exe" || e.name === "ffmpeg")
+          ) {
+            return dir;
+          }
+          if (
+            e.isDirectory() &&
+            !e.name.startsWith(".") &&
+            !dir.includes("partial_movie_files")
+          ) {
+            const res = findFfmpeg(full);
+            if (res) return res;
+          }
+        }
+      } catch {}
+      return null;
+    };
+    const ffmpegBin = findFfmpeg(wingetBase);
+    if (ffmpegBin && !p.includes(ffmpegBin)) {
+      process.env.PATH = `${ffmpegBin}${path.delimiter}${p}`;
+    }
+  }
+}
+ensureFfmpegInPath();
+
+function findRenderedManimMp4(cacheDir: string, filename: string): string | null {
+  const findIn = (dir: string): string | null => {
+    try {
+      const items = fs.readdirSync(dir, { withFileTypes: true });
+      for (const item of items) {
+        const full = path.join(dir, item.name);
+        if (
+          item.isFile() &&
+          item.name.toLowerCase() === filename.toLowerCase() &&
+          !dir.includes("partial_movie_files")
+        ) {
+          return full;
+        }
+        if (
+          item.isDirectory() &&
+          item.name !== "partial_movie_files" &&
+          !item.name.startsWith(".")
+        ) {
+          const res = findIn(full);
+          if (res) return res;
+        }
+      }
+    } catch {}
+    return null;
+  };
+  return findIn(cacheDir);
+}
 
 const MAX_CODE_RETRIES = 3;
 const MAX_VISION_RETRIES = 1;
@@ -228,9 +295,10 @@ async function renderAndValidateScene(
 
   for (let visionAttempt = 0; visionAttempt <= maxVisionLoops; visionAttempt++) {
     totalVisionAttempts = visionAttempt + 1;
-    let compiledPreviewTimeline = "";
+    let previewMp4Found = "";
 
     // 2. Execution & Compiler Self-Healing Loop (Agent 3)
+    const previewOutName = `preview_v${visionAttempt}.mp4`;
     for (let codeAttempt = 0; codeAttempt < MAX_CODE_RETRIES; codeAttempt++) {
       totalCodeAttempts++;
       const attemptSnapshot = path.join(dirs.code, `scene_${sPad}_v${visionAttempt}_c${codeAttempt}.py`);
@@ -241,24 +309,26 @@ async function renderAndValidateScene(
         manifest,
         sid,
         { status: "compiling", code_attempts: totalCodeAttempts, vision_attempts: totalVisionAttempts },
-        `Scene ${sPad}: Compiling Manim script (attempt ${codeAttempt + 1}/${MAX_CODE_RETRIES})...`
+        `Scene ${sPad}: Compiling Manim script via official Manim Community (attempt ${codeAttempt + 1}/${MAX_CODE_RETRIES})...`
       );
 
-      const previewTimelinePath = path.join(cacheDir, `preview_v${visionAttempt}.json`);
-      const pyRes = await runCommandAsync("python3", [
-        PY_RUNNER,
+      const pyRes = await runCommandAsync(PYTHON_CMD, [
+        "-m", "manim",
+        "-ql",
+        "--format=mp4",
+        "--media_dir", cacheDir,
+        "-o", previewOutName,
         scriptPath,
         "GeneratedScene",
-        "--fps", "15",
-        "--out", previewTimelinePath,
       ]);
 
-      if (pyRes.code === 0 && fs.existsSync(previewTimelinePath)) {
-        compiledPreviewTimeline = previewTimelinePath;
+      const found = findRenderedManimMp4(cacheDir, previewOutName);
+      if (pyRes.code === 0 && found && fs.existsSync(found)) {
+        previewMp4Found = found;
         break;
       }
 
-      const stderrMsg = (pyRes.stderr || pyRes.stdout || "Unknown Python execution error").slice(-2500);
+      const stderrMsg = (pyRes.stderr || pyRes.stdout || "Unknown Manim execution error").slice(-2500);
       updateSceneStatus(
         dirs,
         manifest,
@@ -275,24 +345,35 @@ async function renderAndValidateScene(
       fs.writeFileSync(scriptPath, code, "utf8");
     }
 
-    // 3. Rasterize low-res preview (540x960@15fps) & extract 3 PNG QA frames at 25%, 60%, 95%
-    const previewMp4 = path.join(cacheDir, `preview_v${visionAttempt}.mp4`);
-    const qaPrefix = `scene_${sPad}_attempt_${visionAttempt}`;
-    const renderPreviewRes = await runCommandAsync("node", [
-      TIMELINE_RENDERER,
-      "--timeline", compiledPreviewTimeline,
-      "--out", previewMp4,
-      "--width", "540",
-      "--height", "960",
-      "--qa-dir", dirs.qa_frames,
-      "--qa-prefix", qaPrefix,
-    ]);
-
-    if (renderPreviewRes.code !== 0) {
-      throw new Error(`Scene ${sid} preview rasterizer failed: ${renderPreviewRes.stderr}`);
+    if (!previewMp4Found) {
+      throw new Error(`Scene ${sid} preview rendered with code 0 but ${previewOutName} not found in ${cacheDir}`);
     }
 
-    const frameNames = [`${qaPrefix}_frame_25.png`, `${qaPrefix}_frame_60.png`, `${qaPrefix}_frame_95.png`];
+    // 3. Extract 3 PNG QA frames at 25%, 60%, 95% using FFmpeg directly from preview MP4
+    const qaPrefix = `scene_${sPad}_attempt_${visionAttempt}`;
+    const dur = scene.exact_duration_sec || 4.0;
+    const t25 = Math.max(0.05, +(dur * 0.25).toFixed(2));
+    const t60 = Math.max(0.05, +(dur * 0.60).toFixed(2));
+    const t95 = Math.max(0.05, +(dur * 0.95).toFixed(2));
+    const frameSpecs = [
+      { name: `${qaPrefix}_frame_25.png`, t: t25 },
+      { name: `${qaPrefix}_frame_60.png`, t: t60 },
+      { name: `${qaPrefix}_frame_95.png`, t: t95 },
+    ];
+
+    for (const f of frameSpecs) {
+      const dest = path.join(dirs.qa_frames, f.name);
+      await runCommandAsync("ffmpeg", [
+        "-y",
+        "-ss", String(f.t),
+        "-i", previewMp4Found,
+        "-vframes", "1",
+        "-q:v", "2",
+        dest,
+      ]);
+    }
+
+    const frameNames = frameSpecs.map((f) => f.name);
     const framePaths = frameNames.map((n) => path.join(dirs.qa_frames, n));
 
     if (!enableVisionQa) {
@@ -350,42 +431,40 @@ async function renderAndValidateScene(
     fs.writeFileSync(scriptPath, code, "utf8");
   }
 
-  // 5. Final Render (Master 1080x1920@60fps or Fast 540x960@30fps)
+  // 5. Final Render via Official Manim Community (Master -qh 1080x1920@60fps or Fast -qm 720p@30fps)
   const isMaster = manifest.render_profile === "master";
-  const targetFps = isMaster ? 60 : 30;
-  const targetW = isMaster ? 1080 : 540;
-  const targetH = isMaster ? 1920 : 960;
+  const qualFlag = isMaster ? "-qh" : "-qm";
+  const outName = `raw_scene_${sPad}.mp4`;
 
   updateSceneStatus(
     dirs,
     manifest,
     sid,
     { status: "rendering_final" },
-    `Scene ${sPad}: Rendering final ${targetW}x${targetH}@${targetFps}fps clip...`
+    `Scene ${sPad}: Rendering final high-res Manim clip (${qualFlag})...`
   );
 
-  const finalTimelinePath = path.join(cacheDir, "final_timeline.json");
-  const finalPy = await runCommandAsync("python3", [
-    PY_RUNNER,
+  const finalRes = await runCommandAsync(PYTHON_CMD, [
+    "-m", "manim",
+    qualFlag,
+    "--format=mp4",
+    "--media_dir", cacheDir,
+    "-o", outName,
     scriptPath,
     "GeneratedScene",
-    "--fps", String(targetFps),
-    "--out", finalTimelinePath,
   ]);
-  if (finalPy.code !== 0) {
-    throw new Error(`Scene ${sid} final timeline compile failed: ${finalPy.stderr}`);
+
+  if (finalRes.code !== 0) {
+    throw new Error(`Scene ${sid} final Manim render failed: ${finalRes.stderr || finalRes.stdout}`);
   }
 
-  const rawMp4 = path.join(dirs.renders, `raw_scene_${sPad}.mp4`);
-  const finalRender = await runCommandAsync("node", [
-    TIMELINE_RENDERER,
-    "--timeline", finalTimelinePath,
-    "--out", rawMp4,
-    "--width", String(targetW),
-    "--height", String(targetH),
-  ]);
-  if (finalRender.code !== 0) {
-    throw new Error(`Scene ${sid} final rasterize failed: ${finalRender.stderr}`);
+  const finalMp4Found = findRenderedManimMp4(cacheDir, outName);
+  if (!finalMp4Found || !fs.existsSync(finalMp4Found)) {
+    throw new Error(`Scene ${sid} final render completed but ${outName} was not found in ${cacheDir}`);
+  }
+
+  const rawMp4 = path.join(dirs.renders, outName);
+  fs.copyFileSync(finalMp4Found, rawMp4);
   }
 
   // 6. Per-Scene Audio-Video Muxing (zero cumulative drift)
